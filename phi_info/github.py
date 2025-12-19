@@ -1,3 +1,5 @@
+print("[INIT]")
+
 from github import Github, Auth, UnknownObjectException
 from github.GitRelease import GitRelease
 from github.Repository import Repository

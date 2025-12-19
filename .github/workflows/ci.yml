@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
 
     steps:
@@ -28,4 +28,5 @@ jobs:
       - name: Run Check
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYTHONUNBUFFERED: 1
         run: pdm run python -m phi_info.github
