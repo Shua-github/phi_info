@@ -1,0 +1,22 @@
+[project]
+name = "phi_info"
+version = "0.1.0"
+description = "phi_info"
+authors = [
+    {name = "Shua-github", email = "CHA_shua@outlook.com"},
+]
+dependencies = ["unitypy==1.10.18", "httpx>=0.28.1"]
+requires-python = ">=3.10"
+license = {text = "MIT"}
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.pdm]
+distribution = true
+
+[dependency-groups]
+github = [
+    "pygithub>=2.8.1",
+]
