@@ -69,14 +69,10 @@ def export_song_info_from_game_info(game_info: dict) -> str:
     return output_io.getvalue()
 
 
-def from_apk_and_typetree(file: io.BytesIO, typetree: dict) -> str:
+def from_files_and_typetree(files: dict[str,bytes], typetree: dict) -> str:
     env = Environment()
-    with zipfile.ZipFile(file) as apk:
-        env.load_file(
-            apk.read("assets/bin/Data/globalgamemanagers.assets"),
-            name="assets/bin/Data/globalgamemanagers.assets",
-        )
-        env.load_file(apk.read("assets/bin/Data/level0"))
+    for name,file in files.items():
+        env.load_file(file=file,name=name)
 
     game_info = None
     for obj in env.objects:
@@ -104,8 +100,13 @@ def unity_main():
 
     with open(apk_path, "rb") as f:
         apk_bytes = io.BytesIO(f.read())
+        
+    files = {}
+    with zipfile.ZipFile(apk_path) as apk:
+        for file in ["assets/bin/Data/globalgamemanagers.assets","assets/bin/Data/level0"]:
+            files[file] = apk.read(file)
 
-    csv_str = from_apk_and_typetree(apk_bytes, typetree)
+    csv_str = from_files_and_typetree(apk_bytes, typetree)
 
     with open("output.csv", "w", encoding="utf8") as out:
         out.write(csv_str)

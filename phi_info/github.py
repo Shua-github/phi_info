@@ -1,14 +1,11 @@
-print("[INIT]")
-
 from github import Github, Auth, UnknownObjectException
 from github.GitRelease import GitRelease
 from github.Repository import Repository
+from remotezip import RemoteZip
 from phi_info.taptap import TapTapClient, PHI_ID
-from phi_info.unity import from_apk_and_typetree
+from phi_info.unity import from_files_and_typetree
 import os
-import io
 import json
-import httpx
 import pathlib
 
 TMP_DIR = pathlib.Path("./tmp")
@@ -24,17 +21,6 @@ def check_update(repo: Repository, version: str) -> bool:
         print("[CHECK] No release found, treating as first release")
         return True
     return release.tag_name != version
-
-
-def download_apk(download_url: str, save_path: pathlib.Path) -> None:
-    print(f"[DOWNLOAD] Downloading APK from: {download_url}")
-    with httpx.stream("GET", download_url, timeout=3000) as r:
-        r.raise_for_status()
-        with open(save_path, "wb") as f:
-            for chunk in r.iter_bytes():
-                f.write(chunk)
-    print(f"[DOWNLOAD] APK saved to: {save_path}")
-
 
 def github_main():
     print("[INIT] Initializing GitHub client")
@@ -57,20 +43,17 @@ def github_main():
     if not apk_info.apk.download:
         raise RuntimeError("APK download url not found")
 
-    apk_name = "phi.apk"
-    apk_path = TMP_DIR / apk_name
-
-    download_apk(apk_info.apk.download, apk_path)
-
     print("[LOAD] Loading typetree configuration")
     with open("./resources/typetree.json", encoding="utf8") as f:
         typetree = json.load(f)["GameInformation"]
 
+    files = {}
     print("[PARSE] Reading APK and extracting song data")
-    with open(apk_path, "rb") as f:
-        apk_bytes = io.BytesIO(f.read())
-
-    csv_str = from_apk_and_typetree(apk_bytes, typetree)
+    with RemoteZip(apk_info.apk.download) as apk:
+        for file in ["assets/bin/Data/globalgamemanagers.assets","assets/bin/Data/level0"]:
+            files[file] = apk.read(file)
+    
+    csv_str = from_files_and_typetree(files, typetree)
 
     csv_name = "song_list.csv"
     csv_path = TMP_DIR / csv_name
@@ -99,6 +82,10 @@ def github_main():
 
 
 if __name__ == "__main__":
+    import time
+    start_time = time.time()
     print("[START] Script started")
     github_main()
-    print("[END] Script finished")
+    end_time = time.time()
+    elapsed = end_time - start_time
+    print(f"[END] Script finished in {elapsed:.2f} seconds")

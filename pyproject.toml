@@ -5,7 +5,7 @@ description = "phi_info"
 authors = [
     {name = "Shua-github", email = "CHA_shua@outlook.com"},
 ]
-dependencies = ["unitypy==1.10.18", "httpx>=0.28.1"]
+dependencies = ["unitypy==1.10.18", "httpx>=0.28.1", "RemoteZip>=0.12.3"]
 requires-python = ">=3.10"
 license = {text = "MIT"}
 
